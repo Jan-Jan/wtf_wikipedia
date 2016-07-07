@@ -1,29 +1,54 @@
 module.exports = function(grunt) {
 
-    // Project configuration.
-    grunt.initConfig({
-        pkg: grunt.file.readJSON('package.json'),
-        concat: {
-            options: {
-                banner: '/*! <%= pkg.name %> \n by @spencermountain\n <%= grunt.template.today("yyyy-mm-dd") %> <%= pkg.license %> */\n',
-            },
-            dist: {
-                src: ['./i18n.js', './lib/sentence_parser.js', './lib/site_map.js', './lib/fetch_text.js', './index.js'],
-                dest: './client_side/wikiscript.js'
-            }
-        },
-        uglify: {
-            do :{
-                src: ['./client_side/wikiscript.js'],
-                dest: './client_side/wikiscript.min.js'
-            }
+  // Project configuration.
+  grunt.initConfig({
+    pkg: grunt.file.readJSON("package.json"),
+    uglify: {
+      do: {
+        src: ["./client_side/wikiscript.js"],
+        dest: "./client_side/wikiscript.min.js"
+      }
+    },
+    "browserify": {
+      client: {
+        src: "./src/index.js",
+        dest: "./client_side/wikiscript.js",
+        options: {
+          "standalone": true
         }
+      }
+    },
 
-    });
+    mochaTest: {
+      test: {
+        options: {
+          reporter: "spec",
+          clearRequireCache: true,
+          colors: true,
+          growl: false
+        },
+        src: ["./tests/*.js"]
+      }
+    },
 
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-concat');
+    mocha_istanbul: {
+      coverageSpecial: {
+        src: "tests/*.js",
+        options: {
+          reportFormats: ["html"],
+          quiet: true,
+          coverageFolder: "./tests/coverage",
+        }
+      }
+    },
+  });
 
-    grunt.registerTask('default', ['concat', 'uglify']);
+  grunt.loadNpmTasks("grunt-mocha-test");
+  grunt.loadNpmTasks("grunt-mocha-istanbul");
+  grunt.loadNpmTasks("grunt-contrib-uglify");
+  grunt.loadNpmTasks("grunt-browserify");
+  grunt.registerTask("default", ["browserify", "uglify"]);
+  grunt.registerTask("test", ["mochaTest"]);
+  grunt.registerTask("coverage", ["mocha_istanbul"]);
 
 };
